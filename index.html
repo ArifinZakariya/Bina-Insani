@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    
+    body { 
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
+      min-height: 100vh; 
+      font-family: 'Inter', sans-serif; 
+      color: #f8fafc; 
+    }
+    
+    .glass { 
+      background: rgba(255, 255, 255, 0.05); 
+      backdrop-filter: blur(12px); 
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      border-radius: 1.5rem; 
+    }
+    
+    .card-light { 
+      background: white; 
+      color: #1e293b; 
+      border-radius: 1.25rem; 
+    }
+    
+    .btn-primary { 
+      background: linear-gradient(to right, #3b82f6, #2563eb); 
+      transition: all 0.2s; 
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) { 
+      transform: translateY(-1px); 
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); 
+    }
+
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    input, textarea, select { transition: all 0.3s ease; color: #94a3b8; }
+    
+    input:focus, textarea:focus, select:focus {
+      color: #60a5fa !important;
+      background-color: rgba(30, 41, 59, 0.8) !important;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+
+    .card-light input:focus, .card-light textarea:focus, .card-light select:focus {
+      color: #2563eb !important;
+      background-color: #f8fafc !important;
+    }
+
+    .password-wrapper { position: relative; }
+    .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #64748b; cursor: pointer; }
+
+    /* Gaya Kalender */
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      position: relative;
+    }
+    .calendar-day:hover { background-color: #f1f5f9; }
+    .has-data::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      width: 4px;
+      height: 4px;
+      background-color: #3b82f6;
+      border-radius: 50%;
+    }
+    .current-day { border: 2px solid #3b82f6; font-weight: bold; }
+  </style>
+</head>
+<body class="p-4">
+
+  <div id="app" class="max-w-2xl mx-auto">
+    <!-- Landing -->
+    <div id="view-landing" class="glass p-8 text-center mt-10">
+      <div class="w-24 h-24 bg-blue-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
+        <i data-lucide="shield-check" class="w-12 h-12 text-white"></i>
+      </div>
+      <h1 class="text-3xl font-extrabold mb-2 text-white">Bina Ihsani</h1>
+      <p class="text-slate-400 mb-8 font-medium">Manajemen Informasi Pendidik Inklusi</p>
+      <div class="space-y-3">
+        <button onclick="setAdminMode(false); showView('login')" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg">Masuk Guru</button>
+        <button onclick="setAdminMode(true); showView('login')" class="w-full bg-slate-700 hover:bg-slate-600 py-4 rounded-xl font-bold transition text-white text-sm">Masuk Administrator</button>
+        <button onclick="showView('register')" class="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-medium transition text-slate-400 text-xs text-center">Registrasi Guru Baru</button>
+      </div>
+    </div>
+
+    <!-- Login -->
+    <div id="view-login" class="hidden glass p-8 mt-10">
+      <h2 id="login-title" class="text-2xl font-bold mb-6 flex items-center text-white"><i data-lucide="key" class="mr-2 text-blue-400"></i> Login</h2>
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1 opacity-70">Email</label>
+          <input type="email" id="l-email" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1 opacity-70">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="l-pass" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+            <span class="password-toggle" onclick="togglePassword('l-pass', 'l-pass-icon')">
+              <i data-lucide="eye" id="l-pass-icon" class="w-5 h-5"></i>
+            </span>
+          </div>
+        </div>
+        <button type="submit" id="btn-login" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">Masuk Sekarang</button>
+        <button type="button" onclick="showView('landing')" class="w-full text-sm text-slate-400 mt-2">Batal</button>
+      </form>
+    </div>
+
+    <!-- Register -->
+    <div id="view-register" class="hidden glass p-8 mt-4">
+      <h2 class="text-2xl font-bold mb-6 text-white">Registrasi Guru</h2>
+      <form onsubmit="handleRegister(event)" class="space-y-3 text-sm">
+        <input type="text" id="r-nama" placeholder="Nama Lengkap" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+        <input type="email" id="r-email" placeholder="Email" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+        <div class="password-wrapper">
+          <input type="password" id="r-pass" placeholder="Password (Min. 6 Karakter)" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+          <span class="password-toggle" onclick="togglePassword('r-pass', 'r-pass-icon')">
+            <i data-lucide="eye" id="r-pass-icon" class="w-5 h-5"></i>
+          </span>
+        </div>
+        <input type="date" id="r-tgl" required class="w-full p-3 rounded-xl bg-slate-800 border-none text-slate-400">
+        <input type="text" id="r-wa" placeholder="No. WhatsApp" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+        <textarea id="r-alamat" placeholder="Alamat" class="w-full p-3 rounded-xl bg-slate-800 border-none"></textarea>
+        <button type="submit" id="btn-reg" class="w-full btn-primary py-3 rounded-xl font-bold shadow-lg">Daftar Akun</button>
+        <button type="button" onclick="showView('landing')" class="w-full text-slate-400">Batal</button>
+      </form>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="view-dashboard" class="hidden space-y-4 pb-20 text-white">
+      <div class="glass p-5 flex justify-between items-center">
+        <div>
+          <p id="user-role-tag" class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Pendidik Inklusi</p>
+          <h3 id="user-display-name" class="text-xl font-bold">Memuat...</h3>
+        </div>
+        <button onclick="logout()" class="bg-red-500/20 text-red-400 p-2 rounded-full"><i data-lucide="power"></i></button>
+      </div>
+
+      <!-- Admin Context Switcher -->
+      <div id="admin-selector-area" class="hidden glass p-4 space-y-3">
+        <div class="flex justify-between items-center">
+          <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest">Filter Data Administrator</p>
+          <button onclick="resetAdminFilter()" id="btn-reset-filter" class="hidden text-[10px] text-red-400 font-bold uppercase">Ganti Guru</button>
+        </div>
+        <div id="teacher-current-selection" class="text-sm font-semibold text-blue-400 text-center">Pilih pendidik untuk memantau data</div>
+      </div>
+
+      <!-- Stats -->
+      <div id="guru-stats" class="grid grid-cols-2 gap-3">
+        <div class="glass p-4"><p class="text-xs opacity-60">Anak Didik</p><h4 id="s-students" class="text-2xl font-bold">0</h4></div>
+        <div class="glass p-4"><p class="text-xs opacity-60">Log Jurnal</p><h4 id="s-journals" class="text-2xl font-bold">0</h4></div>
+      </div>
+
+      <div id="admin-stats" class="hidden grid grid-cols-3 gap-2">
+        <div class="glass p-3 text-center"><p class="text-[9px] opacity-60">Guru</p><h4 id="adm-teachers" class="text-xl font-bold">0</h4></div>
+        <div class="glass p-3 text-center"><p class="text-[9px] opacity-60">Siswa</p><h4 id="adm-students" class="text-xl font-bold">0</h4></div>
+        <div class="glass p-3 text-center"><p class="text-[9px] opacity-60">Jurnal</p><h4 id="adm-journals" class="text-xl font-bold">0</h4></div>
+      </div>
+
+      <!-- Menus -->
+      <div id="menu-grid" class="grid grid-cols-4 gap-2">
+        <button onclick="showSection('absen')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="calendar" class="text-blue-400 mb-1"></i><span class="text-[10px]">Absen</span></button>
+        <button onclick="showSection('jurnal')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="edit-3" class="text-green-400 mb-1"></i><span class="text-[10px]">Jurnal</span></button>
+        <button onclick="showSection('siswa')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="users" class="text-purple-400 mb-1"></i><span class="text-[10px]">Siswa</span></button>
+        <button onclick="showSection('add')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="user-plus" class="text-orange-400 mb-1"></i><span class="text-[10px]">Baru</span></button>
+        
+        <button onclick="showAdminSection('rekap')" class="admin-feature hidden glass p-3 flex flex-col items-center"><i data-lucide="pie-chart" class="text-blue-400 mb-1"></i><span class="text-[10px]">Rekap</span></button>
+        <button onclick="showAdminSection('all-absen')" class="admin-feature hidden glass p-3 flex flex-col items-center"><i data-lucide="list" class="text-green-400 mb-1"></i><span class="text-[10px]">Log Absen</span></button>
+        <button onclick="showAdminSection('all-jurnal')" class="admin-feature hidden glass p-3 flex flex-col items-center"><i data-lucide="book" class="text-purple-400 mb-1"></i><span class="text-[10px]">Log Jurnal</span></button>
+        <button onclick="showAdminSection('teachers')" class="admin-menu glass p-3 flex flex-col items-center"><i data-lucide="user-check" class="text-orange-400 mb-1"></i><span class="text-[10px]">Pilih Guru</span></button>
+      </div>
+
+      <!-- Main Container -->
+      <div id="main-content" class="card-light p-5 min-h-[400px]">
+        <div class="text-center text-slate-400 py-10"><i data-lucide="mouse-pointer-2" class="mx-auto mb-2 opacity-20"></i><p>Pilih menu</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 hidden px-6 py-3 rounded-full shadow-2xl z-50 text-sm font-bold text-white max-w-[90%] text-center"></div>
+
+  <script>
+    const SUPABASE_URL = "https://tamrjrqvtulgxnschvpf.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhbXJqcnF2dHVsZ3huc2NodnBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzOTc1MTQsImV4cCI6MjA4ODk3MzUxNH0.9PrG6Z3R2mnsvqMB1JuCdh7z8tFkImd69OZ0ZMF-Sqc";
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let userSession = null;
+    let userData = null;
+    let isAdmin = false;
+    let selectedTeacher = null; 
+    let students = [];
+    let attendanceLogs = [];
+    let journalLogs = [];
+    let allTeachers = [];
+    let currentCalDate = new Date();
+
+    window.onload = () => lucide.createIcons();
+
+    function setAdminMode(mode) {
+      isAdmin = mode;
+      document.getElementById('login-title').innerText = mode ? 'Login Administrator' : 'Login Guru';
+    }
+
+    function showView(v) {
+      ['landing', 'login', 'register', 'dashboard'].forEach(id => {
+        const el = document.getElementById('view-'+id);
+        if(el) el.classList.add('hidden');
+      });
+      document.getElementById('view-'+v).classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+      icon.setAttribute('data-lucide', input.type === 'password' ? 'eye' : 'eye-off');
+      lucide.createIcons();
+    }
+
+    function msg(text, error = false) {
+      const t = document.getElementById('toast');
+      t.innerText = text;
+      t.style.backgroundColor = error ? '#ef4444' : '#2563eb';
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 5000);
+    }
+
+    // --- LOGIKA AUTH ---
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-login'); btn.disabled = true;
+      const email = document.getElementById('l-email').value;
+      const pass = document.getElementById('l-pass').value;
+
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+        
+        userSession = data.user;
+        isAdmin = (email === 'bina@insani.com');
+
+        // Ambil profil dari tabel teachers
+        const { data: prof, error: profErr } = await sb.from('teachers').select('*').eq('id', userSession.id).single();
+        
+        if (profErr) {
+          if (isAdmin) {
+            // Jika admin tapi profil di tabel tidak ada, buat dummy profil
+            userData = { nama: "Admin Bina Insani", email: email };
+          } else {
+            // Jika guru dan profil tidak ada, gagalkan login dan suruh registrasi ulang
+            await sb.auth.signOut();
+            throw new Error("Profil guru tidak ditemukan. Silakan hubungi Admin atau coba daftar ulang dengan email yang sama.");
+          }
+        } else {
+          userData = prof;
+        }
+        
+        setupDashboardUI();
+        await loadStats();
+        showView('dashboard');
+        
+        if(isAdmin) showAdminSection('teachers');
+        else showSection('absen');
+      } catch (err) { 
+        msg("Login Gagal: " + err.message, true); 
+        console.error("Login Error:", err);
+      } finally { btn.disabled = false; }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-reg'); btn.disabled = true;
+      const email = document.getElementById('r-email').value;
+      const pass = document.getElementById('r-pass').value;
+      const nama = document.getElementById('r-nama').value;
+      const tgl = document.getElementById('r-tgl').value;
+      const wa = document.getElementById('r-wa').value;
+      const alamat = document.getElementById('r-alamat').value;
+
+      try {
+        const { data: authData, error: authError } = await sb.auth.signUp({ email, password: pass });
+        if (authError) throw authError;
+        
+        // Simpan profil ke tabel teachers menggunakan ID dari auth.users
+        const { error: profileError } = await sb.from('teachers').insert([{
+          id: authData.user.id, email, nama, tgl_lahir: tgl, no_wa: wa, alamat
+        }]);
+        
+        if (profileError) {
+          console.error("Profile Insert Error:", profileError);
+          throw new Error("Akun terdaftar, namun gagal menyimpan detail profil. Silakan hubungi Admin.");
+        }
+        
+        msg("Pendaftaran Berhasil! Silakan Login.");
+        showView('login');
+      } catch (err) { 
+        msg("Gagal: " + err.message, true); 
+      } finally { btn.disabled = false; }
+    }
+
+    function setupDashboardUI() {
+      const roleTag = document.getElementById('user-role-tag');
+      const nameDisp = document.getElementById('user-display-name');
+      const adminSelector = document.getElementById('admin-selector-area');
+      
+      if(isAdmin) {
+        roleTag.innerText = "Sistem Administrator";
+        roleTag.classList.replace('text-blue-400', 'text-red-400');
+        nameDisp.innerText = "Admin Bina Insani";
+        document.getElementById('guru-stats').classList.add('hidden');
+        document.getElementById('admin-stats').classList.remove('hidden');
+        adminSelector.classList.remove('hidden');
+        document.querySelectorAll('.guru-menu').forEach(m => m.classList.add('hidden'));
+        document.querySelectorAll('.admin-menu').forEach(m => m.classList.remove('hidden'));
+      } else {
+        roleTag.innerText = "Pendidik Inklusi";
+        roleTag.classList.replace('text-red-400', 'text-blue-400');
+        nameDisp.innerText = userData ? userData.nama : "Pendidik";
+        document.getElementById('guru-stats').classList.remove('hidden');
+        document.getElementById('admin-stats').classList.add('hidden');
+        adminSelector.classList.add('hidden');
+        document.querySelectorAll('.guru-menu').forEach(m => m.classList.remove('hidden'));
+        document.querySelectorAll('.admin-menu').forEach(m => m.classList.add('hidden'));
+      }
+      lucide.createIcons();
+    }
+
+    async function loadStats() {
+      if(!userSession) return;
+      if(isAdmin) {
+        const { count: tCount } = await sb.from('teachers').select('*', { count: 'exact', head: true });
+        const { count: sCount } = await sb.from('students').select('*', { count: 'exact', head: true });
+        const { count: jCount } = await sb.from('journals').select('*', { count: 'exact', head: true });
+        document.getElementById('adm-teachers').innerText = tCount || 0;
+        document.getElementById('adm-students').innerText = sCount || 0;
+        document.getElementById('adm-journals').innerText = jCount || 0;
+        const { data: allT } = await sb.from('teachers').select('*');
+        allTeachers = allT || [];
+        const { data: logs } = await sb.from('attendance').select('*');
+        attendanceLogs = logs || [];
+        const { data: jLogs } = await sb.from('journals').select('*').order('created_at', { ascending: false });
+        journalLogs = jLogs || [];
+      } else {
+        const { count: sCount } = await sb.from('students').select('*', { count: 'exact', head: true }).eq('teacher_id', userSession.id);
+        const { count: jCount } = await sb.from('journals').select('*', { count: 'exact', head: true }).eq('teacher_id', userSession.id);
+        document.getElementById('s-students').innerText = sCount || 0;
+        document.getElementById('s-journals').innerText = jCount || 0;
+        const { data } = await sb.from('students').select('*').eq('teacher_id', userSession.id);
+        students = data || [];
+        const { data: logs } = await sb.from('attendance').select('*').eq('teacher_id', userSession.id);
+        attendanceLogs = logs || [];
+        const { data: jLogs } = await sb.from('journals').select('*').eq('teacher_id', userSession.id).order('created_at', { ascending: false });
+        journalLogs = jLogs || [];
+      }
+    }
+
+    // --- GURU SECTIONS ---
+    function showSection(s) {
+      const cnt = document.getElementById('main-content');
+      if(s === 'absen') {
+        cnt.innerHTML = `<div class="flex border-b mb-4"><button onclick="renderAbsenTab('input')" id="tab-abs-input" class="flex-1 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600">Input Absen</button><button onclick="renderAbsenTab('kalender')" id="tab-abs-kalender" class="flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400">Kalender</button></div><div id="absen-tab-content"></div>`;
+        renderAbsenTab('input');
+      } 
+      else if(s === 'jurnal') {
+        cnt.innerHTML = `<div class="flex border-b mb-4"><button onclick="renderJurnalTab('input')" id="tab-jur-input" class="flex-1 py-2 text-sm font-bold border-b-2 border-green-600 text-green-600">Tulis Jurnal</button><button onclick="renderJurnalTab('riwayat')" id="tab-jur-riwayat" class="flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400">Riwayat</button></div><div id="jurnal-tab-content"></div>`;
+        renderJurnalTab('input');
+      }
+      else if(s === 'siswa') {
+        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-purple-600">Siswa Anda</h3><div class="space-y-2">`;
+        if(students.length === 0) h += `<p class="text-center text-slate-400 py-10 italic">Belum ada siswa.</p>`;
+        else students.forEach(st => h += `<div class="p-3 bg-slate-50 rounded-lg flex justify-between shadow-sm"><div><b class="text-blue-600 font-bold">${st.nama}</b><br><small class="text-slate-500 font-medium">${st.kelas}</small></div></div>`);
+        cnt.innerHTML = h + `</div>`;
+      }
+      else if(s === 'add') {
+        cnt.innerHTML = `<h3 class="font-bold mb-4 border-b pb-2 text-orange-600">Tambah Siswa</h3><form onsubmit="saveStudent(event)" class="space-y-3"><input type="text" id="s-nama" placeholder="Nama Siswa" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"><input type="text" id="s-kls" placeholder="Kelas" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"><input type="date" id="s-tgl" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"><button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">Simpan</button></form>`;
+      }
+      lucide.createIcons();
+    }
+
+    // --- TAB ABSENSI ---
+    function renderAbsenTab(tab) {
+      const content = document.getElementById('absen-tab-content');
+      if (!content) return;
+      document.getElementById('tab-abs-input').className = tab === 'input' ? "flex-1 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
+      document.getElementById('tab-abs-kalender').className = tab === 'kalender' ? "flex-1 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
+
+      if(tab === 'input') {
+        let h = `<form onsubmit="saveAbsen(event)" class="space-y-4">
+          <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <p class="text-[10px] font-bold text-blue-600 uppercase mb-1 tracking-widest">Guru Pendamping</p>
+            <div class="flex justify-between items-center font-bold text-slate-700"><span>${userData ? userData.nama : 'Pendidik'}</span>
+              <select id="abs-guru" class="p-1 text-sm rounded border text-blue-600 focus:ring-2 focus:ring-blue-500"><option>Hadir</option><option>Izin</option><option>Sakit</option></select>
+            </div>
+          </div>`;
+        if(students.length === 0) h += `<p class="text-center py-10 opacity-50 italic text-xs">Tambahkan data siswa terlebih dahulu.</p>`;
+        else {
+          students.forEach(st => h += `<div class="flex justify-between items-center p-3 border-b text-sm text-slate-800"><span>${st.nama}</span><select class="abs-item p-1 border rounded text-blue-600 font-bold" data-name="${st.nama}"><option>Hadir</option><option>Izin</option><option>Sakit</option><option>Alpa</option></select></div>`);
+          h += `<button type="submit" id="btn-save-abs" class="w-full btn-primary py-3 rounded-lg font-bold mt-4 shadow-lg">Kirim Absen Sekarang</button>`;
+        }
+        content.innerHTML = h + `</form>`;
+      } else renderCalendarUI();
+    }
+
+    function renderCalendarUI() {
+      const content = document.getElementById('absen-tab-content');
+      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const year = currentCalDate.getFullYear();
+      const month = currentCalDate.getMonth();
+      content.innerHTML = `<div class="flex justify-between items-center mb-4"><button onclick="changeMonth(-1)" class="p-2"><i data-lucide="chevron-left"></i></button><span class="font-bold text-slate-700">${monthNames[month]} ${year}</span><button onclick="changeMonth(1)" class="p-2"><i data-lucide="chevron-right"></i></button></div><div class="calendar-grid mb-2">${['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => `<div class="text-center text-[10px] font-bold text-slate-400 py-2 uppercase">${day}</div>`).join('')}${generateCalendarDays(year, month)}</div><div id="day-detail" class="mt-4 p-4 bg-slate-50 rounded-xl border hidden shadow-inner text-slate-800"></div>`;
+      lucide.createIcons();
+    }
+
+    function changeMonth(dir) { currentCalDate.setMonth(currentCalDate.getMonth() + dir); renderCalendarUI(); }
+    
+    function generateCalendarDays(year, month) {
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      let html = '';
+      for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const hasData = attendanceLogs.some(log => log.created_at && log.created_at.startsWith(dStr));
+        html += `<div onclick="showDayDetail('${dStr}')" class="calendar-day text-slate-700 ${hasData ? 'has-data bg-blue-50' : ''}">${day}</div>`;
+      }
+      return html;
+    }
+
+    function showDayDetail(dateStr) {
+      const detail = document.getElementById('day-detail');
+      if (!detail) return;
+      const logs = attendanceLogs.filter(log => log.created_at && log.created_at.startsWith(dateStr));
+      if(logs.length > 0) {
+        detail.innerHTML = `<h4 class="font-bold text-xs text-blue-600 mb-2 border-b pb-1">Detail: ${dateStr}</h4>` + logs.map(log => `<div class="flex justify-between text-[10px] py-1 border-b border-slate-200 text-slate-800"><span>${log.identifier}</span><b class="${log.status === 'Hadir' ? 'text-green-600' : 'text-red-500'} font-bold">${log.status}</b></div>`).join('');
+        detail.classList.remove('hidden');
+      } else detail.classList.add('hidden');
+    }
+
+    // --- TAB JURNAL ---
+    function renderJurnalTab(tab) {
+      const content = document.getElementById('jurnal-tab-content');
+      if (!content) return;
+      document.getElementById('tab-jur-input').className = tab === 'input' ? "flex-1 py-2 text-sm font-bold border-b-2 border-green-600 text-green-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
+      document.getElementById('tab-jur-riwayat').className = tab === 'riwayat' ? "flex-1 py-2 text-sm font-bold border-b-2 border-green-600 text-green-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
+
+      if(tab === 'input') {
+        if(students.length === 0) content.innerHTML = `<p class="text-center py-10 italic text-xs">Silakan tambah data siswa terlebih dahulu.</p>`;
+        else {
+          content.innerHTML = `<form onsubmit="saveJurnal(event)" class="space-y-3"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilih Siswa</label><select id="j-siswa" class="w-full p-3 rounded-lg border text-blue-600 font-bold focus:ring-2 focus:ring-blue-500">${students.map(st => `<option>${st.nama}</option>`).join('')}</select><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Catatan Laporan Perkembangan</label><textarea id="j-text" placeholder="Tulis pengamatan atau perkembangan anak hari ini..." rows="6" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"></textarea><button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">Simpan Laporan Jurnal</button></form>`;
+        }
+      } else {
+        if(journalLogs.length === 0) content.innerHTML = `<p class="text-center py-10 opacity-50 italic text-xs">Belum ada riwayat laporan jurnal.</p>`;
+        else content.innerHTML = journalLogs.map(log => `<div class="p-3 bg-slate-50 rounded-xl border mb-2 shadow-sm text-xs text-slate-800"><div class="flex justify-between font-bold text-blue-600 mb-1"><span>${log.student_name}</span><span>${new Date(log.created_at).toLocaleDateString()}</span></div><p class="leading-relaxed opacity-80 font-medium italic">${log.content}</p></div>`).join('');
+      }
+    }
+
+    // --- ADMIN FILTER ---
+    function selectTeacherForAdmin(teacherId, teacherName) {
+      selectedTeacher = { id: teacherId, name: teacherName };
+      document.getElementById('teacher-current-selection').innerText = "Data Terpilih: " + teacherName;
+      document.getElementById('btn-reset-filter').classList.remove('hidden');
+      document.querySelectorAll('.admin-feature').forEach(el => el.classList.remove('hidden'));
+      showAdminSection('rekap');
+    }
+
+    function resetAdminFilter() {
+      selectedTeacher = null;
+      document.getElementById('teacher-current-selection').innerText = "Pilih pendidik untuk memantau data";
+      document.getElementById('btn-reset-filter').classList.add('hidden');
+      document.querySelectorAll('.admin-feature').forEach(el => el.classList.add('hidden'));
+      showAdminSection('teachers');
+    }
+
+    function showAdminSection(s) {
+      const cnt = document.getElementById('main-content');
+      if(s === 'teachers') {
+        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-orange-600">Daftar Pendidik</h3><div class="space-y-2">`;
+        allTeachers.forEach(t => h += `<div onclick="selectTeacherForAdmin('${t.id}', '${t.nama}')" class="p-3 bg-white border rounded-xl flex items-center cursor-pointer hover:bg-blue-50 transition text-slate-800"><div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold mr-3 text-sm">${t.nama.charAt(0)}</div><div class="flex-1"><b class="text-sm font-bold">${t.nama}</b><br><small class="text-slate-400 font-medium text-[10px] tracking-tight">${t.email}</small></div><i data-lucide="chevron-right" class="text-slate-300 w-4 h-4"></i></div>`);
+        cnt.innerHTML = h + `</div>`;
+      } 
+      else if (!selectedTeacher) cnt.innerHTML = `<div class="text-center py-20 text-slate-400 italic">Pilih guru di menu "Pilih Guru" untuk melihat log spesifik.</div>`;
+      else if(s === 'all-absen') {
+        const f = attendanceLogs.filter(l => l.teacher_id === selectedTeacher.id);
+        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-slate-800">Log Absen: ${selectedTeacher.name}</h3><div class="space-y-2 text-[10px]">`;
+        if(f.length === 0) h += `<p class="text-center py-10 opacity-50 italic">Kosong.</p>`;
+        f.slice(0, 50).forEach(l => h += `<div class="p-2 bg-slate-50 rounded border flex justify-between text-slate-800 shadow-sm"><div><b class="font-bold text-blue-600">${l.identifier}</b><br><span class="opacity-50 font-medium">${new Date(l.created_at).toLocaleString('id-ID')}</span></div><div class="font-bold ${l.status === 'Hadir' ? 'text-green-600' : 'text-red-500'} uppercase">${l.status}</div></div>`);
+        cnt.innerHTML = h + `</div>`;
+      } 
+      else if(s === 'all-jurnal') {
+        const f = journalLogs.filter(l => l.teacher_id === selectedTeacher.id);
+        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-purple-600">Jurnal: ${selectedTeacher.name}</h3><div class="space-y-4 text-slate-800">`;
+        if(f.length === 0) h += `<p class="text-center py-10 opacity-50 italic text-slate-800">Belum ada catatan jurnal.</p>`;
+        f.forEach(l => h += `<div class="p-3 bg-slate-50 rounded-xl border text-[10px] text-slate-800 shadow-sm"><div class="flex justify-between font-bold text-blue-600 mb-1"><span>${l.student_name}</span><span>${new Date(l.created_at).toLocaleDateString()}</span></div><p class="leading-relaxed opacity-90">${l.content}</p></div>`);
+        cnt.innerHTML = h + `</div>`;
+      } 
+      else if(s === 'rekap') renderAdminRekap();
+      lucide.createIcons();
+    }
+
+    function renderAdminRekap() {
+      const cnt = document.getElementById('main-content');
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+      const fl = attendanceLogs.filter(l => l.teacher_id === selectedTeacher.id);
+      const rekapGuru = {}; const rekapSiswa = {};
+      fl.forEach(l => {
+        const d = new Date(l.created_at);
+        if(d.getMonth() + 1 === month && d.getFullYear() === year) {
+          const t = l.role === 'Guru' ? rekapGuru : rekapSiswa;
+          if(!t[l.identifier]) t[l.identifier] = { hadir: 0, total: 0 };
+          t[l.identifier].total++; if(l.status === 'Hadir') t[l.identifier].hadir++;
+        }
+      });
+      let h = `<h3 class="font-bold mb-4 border-b pb-2 text-slate-800 flex justify-between items-center"><span>Rekap ${month}/${year}</span> <span class="text-[10px] bg-blue-100 px-2 py-0.5 rounded text-blue-600 uppercase">Bulanan</span></h3><p class="text-xs font-bold text-slate-500 mb-4 tracking-tight">Pendidik: ${selectedTeacher.name}</p>`;
+      h += `<div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Kehadiran Pendidik</div>`;
+      if(Object.keys(rekapGuru).length === 0) h += `<p class="text-[10px] italic opacity-40 mb-4">Tidak ada data guru bulan ini.</p>`;
+      Object.keys(rekapGuru).forEach(id => {
+        const p = Math.round((rekapGuru[id].hadir / rekapGuru[id].total) * 100);
+        h += `<div class="mb-4 text-xs text-slate-800"><div class="flex justify-between mb-1"><span class="font-medium">${id}</span><span class="font-bold text-blue-600">${p}%</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full shadow-inner"><div class="bg-blue-500 h-1.5 rounded-full" style="width:${p}%"></div></div></div>`;
+      });
+      h += `<div class="mt-8 text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Kehadiran Anak Didik</div>`;
+      if(Object.keys(rekapSiswa).length === 0) h += `<p class="text-[10px] italic opacity-40">Tidak ada data siswa bulan ini.</p>`;
+      Object.keys(rekapSiswa).forEach(id => {
+        const p = Math.round((rekapSiswa[id].hadir / rekapSiswa[id].total) * 100);
+        h += `<div class="mb-4 text-xs text-slate-800"><div class="flex justify-between mb-1"><span class="font-medium">${id}</span><span class="font-bold text-green-600">${p}%</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full shadow-inner"><div class="bg-green-500 h-1.5 rounded-full" style="width:${p}%"></div></div></div>`;
+      });
+      cnt.innerHTML = h;
+    }
+
+    // --- CRUD ---
+    async function saveStudent(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button'); btn.disabled = true;
+      try {
+        const { error } = await sb.from('students').insert([{ teacher_id: userSession.id, nama: document.getElementById('s-nama').value, kelas: document.getElementById('s-kls').value, tgl_lahir: document.getElementById('s-tgl').value }]);
+        if (error) throw error;
+        msg("Data Siswa Berhasil Disimpan!"); await loadStats(); showSection('siswa');
+      } catch (err) { msg("Gagal simpan: " + err.message, true); }
+      finally { btn.disabled = false; }
+    }
+
+    async function saveAbsen(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-save-abs'); btn.disabled = true;
+      try {
+        // Validasi ketersediaan data profil
+        const ident = userData ? userData.nama : userSession.email;
+        const logs = [{ teacher_id: userSession.id, identifier: ident, role: 'Guru', status: document.getElementById('abs-guru').value }];
+        
+        document.querySelectorAll('.abs-item').forEach(el => {
+          logs.push({ teacher_id: userSession.id, identifier: el.dataset.name, role: 'Siswa', status: el.value });
+        });
+        
+        const { error } = await sb.from('attendance').insert(logs);
+        if (error) throw error;
+        msg("Absensi Hari Ini Berhasil Terkirim!"); await loadStats(); renderAbsenTab('kalender');
+      } catch (err) { msg("Gagal kirim absen: " + err.message, true); }
+      finally { btn.disabled = false; }
+    }
+
+    async function saveJurnal(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button'); btn.disabled = true;
+      try {
+        const { error } = await sb.from('journals').insert([{ teacher_id: userSession.id, student_name: document.getElementById('j-siswa').value, content: document.getElementById('j-text').value }]);
+        if (error) throw error;
+        msg("Laporan Jurnal Berhasil Disimpan!"); await loadStats(); renderJurnalTab('riwayat');
+      } catch (err) { msg("Gagal simpan jurnal: " + err.message, true); }
+      finally { btn.disabled = false; }
+    }
+
+    async function logout() { await sb.auth.signOut(); userSession = null; userData = null; isAdmin = false; selectedTeacher = null; students = []; showView('landing'); }
+  </script>
+</body>
+</html>
