@@ -7,194 +7,288 @@
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
     
     body { 
-      background: linear-gradient(135deg, #1e293b 0%, #334155 100%); 
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%); 
       min-height: 100vh; 
-      font-family: 'Inter', sans-serif; 
-      color: #f8fafc; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      color: #ffffff; 
+      overflow-x: hidden;
     }
     
+    /* Efek Glassmorphism yang lebih ceria */
     .glass { 
-      background: rgba(255, 255, 255, 0.05); 
-      backdrop-filter: blur(12px); 
-      border: 1px solid rgba(255, 255, 255, 0.1); 
-      border-radius: 1.5rem; 
+      background: rgba(255, 255, 255, 0.2); 
+      backdrop-filter: blur(16px); 
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.3); 
+      border-radius: 2rem; 
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
     }
     
     .card-light { 
-      background: white; 
+      background: rgba(255, 255, 255, 0.95); 
       color: #1e293b; 
-      border-radius: 1.25rem; 
+      border-radius: 1.5rem; 
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     }
     
     .btn-primary { 
-      background: linear-gradient(to right, #3b82f6, #2563eb); 
-      transition: all 0.2s; 
+      background: linear-gradient(45deg, #4f46e5, #9333ea); 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
       color: white;
+      border: none;
     }
     
     .btn-primary:hover:not(:disabled) { 
-      transform: translateY(-1px); 
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); 
+      transform: translateY(-3px) scale(1.02); 
+      box-shadow: 0 10px 20px rgba(79, 70, 229, 0.4); 
+      filter: brightness(1.1);
     }
 
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     
-    input, textarea, select { transition: all 0.3s ease; color: #94a3b8; }
+    input, textarea, select { 
+      transition: all 0.3s ease; 
+      color: #1e293b; 
+      background: rgba(255, 255, 255, 0.9) !important;
+      border: 2px solid transparent !important;
+    }
     
     input:focus, textarea:focus, select:focus {
-      color: #60a5fa !important;
-      background-color: rgba(30, 41, 59, 0.8) !important;
+      color: #4f46e5 !important;
+      background-color: #ffffff !important;
       outline: none;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-    }
-
-    .card-light input:focus, .card-light textarea:focus, .card-light select:focus {
-      color: #2563eb !important;
-      background-color: #f8fafc !important;
+      border-color: #a855f7 !important;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
     }
 
     .password-wrapper { position: relative; }
-    .password-toggle { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #64748b; cursor: pointer; }
+    .password-toggle { position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%); color: #64748b; cursor: pointer; }
+
+    /* Animasi muncul */
+    .view-animate {
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     /* Gaya Kalender */
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
     .calendar-day {
       aspect-ratio: 1;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
+      border-radius: 0.75rem;
+      font-size: 0.9rem;
       position: relative;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.2s;
     }
-    .calendar-day:hover { background-color: #f1f5f9; }
+    .calendar-day:hover { background-color: #ffffff; transform: scale(1.1); color: #9333ea; }
     .has-data::after {
       content: '';
       position: absolute;
-      bottom: 4px;
-      width: 4px;
-      height: 4px;
-      background-color: #3b82f6;
+      bottom: 6px;
+      width: 5px;
+      height: 5px;
+      background-color: #f43f5e;
       border-radius: 50%;
     }
-    .current-day { border: 2px solid #3b82f6; font-weight: bold; }
+    .current-day { background: #9333ea !important; color: white !important; font-weight: 800; box-shadow: 0 4px 10px rgba(147, 51, 234, 0.3); }
+    
+    /* Stat Cards Colors */
+    .stat-card-1 { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+    .stat-card-2 { background: linear-gradient(135deg, #10b981, #34d399); }
+    .stat-card-3 { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+
+    .menu-icon-wrapper {
+      width: 45px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
   </style>
 </head>
-<body class="p-4">
+<body class="p-4 md:p-8">
 
   <div id="app" class="max-w-2xl mx-auto">
     <!-- Landing -->
-    <div id="view-landing" class="glass p-8 text-center mt-10">
-      <div class="w-24 h-24 bg-blue-500 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg">
-        <i data-lucide="shield-check" class="w-12 h-12 text-white"></i>
+    <div id="view-landing" class="glass p-10 text-center mt-10 view-animate">
+      <div class="w-28 h-28 bg-white rounded-3xl mx-auto mb-8 flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform">
+        <i data-lucide="heart" class="w-14 h-14 text-pink-500 fill-current"></i>
       </div>
-      <h1 class="text-3xl font-extrabold mb-2 text-white">Bina Ihsani</h1>
-      <p class="text-slate-400 mb-8 font-medium">Manajemen Informasi Pendidik Inklusi</p>
-      <div class="space-y-3">
-        <button onclick="setAdminMode(false); showView('login')" class="w-full btn-primary py-4 rounded-xl font-bold shadow-lg">Masuk Guru</button>
-        <button onclick="setAdminMode(true); showView('login')" class="w-full bg-slate-700 hover:bg-slate-600 py-4 rounded-xl font-bold transition text-white text-sm">Masuk Administrator</button>
-        <button onclick="showView('register')" class="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-medium transition text-slate-400 text-xs text-center">Registrasi Guru Baru</button>
+      <h1 class="text-4xl font-extrabold mb-2 tracking-tight text-white">Bina Ihsani</h1>
+      <p class="text-white/80 mb-10 font-medium text-lg italic">"Membimbing dengan Hati, Mendidik dengan Aksi"</p>
+      <div class="space-y-4">
+        <button onclick="setAdminMode(false); showView('login')" class="w-full btn-primary py-4 rounded-2xl font-bold shadow-xl text-lg">Masuk Guru</button>
+        <button onclick="setAdminMode(true); showView('login')" class="w-full btn-secondary py-4 rounded-2xl font-bold text-white text-md">Panel Administrator</button>
+        <div class="pt-4">
+          <button onclick="showView('register')" class="text-white/70 hover:text-white transition font-semibold underline underline-offset-4">Belum punya akun? Registrasi di sini</button>
+        </div>
       </div>
     </div>
 
     <!-- Login -->
-    <div id="view-login" class="hidden glass p-8 mt-10">
-      <h2 id="login-title" class="text-2xl font-bold mb-6 flex items-center text-white"><i data-lucide="key" class="mr-2 text-blue-400"></i> Login</h2>
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+    <div id="view-login" class="hidden glass p-8 mt-10 view-animate">
+      <h2 id="login-title" class="text-3xl font-extrabold mb-8 flex items-center text-white"><i data-lucide="smile" class="mr-3 text-yellow-300"></i> Halo, Selamat Datang!</h2>
+      <form onsubmit="handleLogin(event)" class="space-y-5">
         <div>
-          <label class="block text-sm mb-1 opacity-70">Email</label>
-          <input type="email" id="l-email" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+          <label class="block text-sm font-bold mb-2 ml-1 text-white/90 uppercase tracking-wider">Email Akun</label>
+          <input type="email" id="l-email" required class="w-full p-4 rounded-2xl border-none shadow-inner text-slate-800" placeholder="nama@email.com">
         </div>
         <div>
-          <label class="block text-sm mb-1 opacity-70">Password</label>
+          <label class="block text-sm font-bold mb-2 ml-1 text-white/90 uppercase tracking-wider">Kata Sandi</label>
           <div class="password-wrapper">
-            <input type="password" id="l-pass" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+            <input type="password" id="l-pass" required class="w-full p-4 rounded-2xl border-none shadow-inner text-slate-800" placeholder="••••••••">
             <span class="password-toggle" onclick="togglePassword('l-pass', 'l-pass-icon')">
-              <i data-lucide="eye" id="l-pass-icon" class="w-5 h-5"></i>
+              <i data-lucide="eye" id="l-pass-icon" class="w-6 h-6"></i>
             </span>
           </div>
         </div>
-        <button type="submit" id="btn-login" class="w-full btn-primary py-3 rounded-xl font-bold mt-4">Masuk Sekarang</button>
-        <button type="button" onclick="showView('landing')" class="w-full text-sm text-slate-400 mt-2">Batal</button>
+        <button type="submit" id="btn-login" class="w-full btn-primary py-4 rounded-2xl font-bold mt-4 text-lg">Masuk ke Sistem</button>
+        <button type="button" onclick="setAdminMode(false); showView('landing')" class="w-full text-sm text-white/60 mt-4 font-semibold hover:text-white transition">← Kembali ke Beranda</button>
       </form>
     </div>
 
     <!-- Register -->
-    <div id="view-register" class="hidden glass p-8 mt-4">
-      <h2 class="text-2xl font-bold mb-6 text-white">Registrasi Guru</h2>
-      <form onsubmit="handleRegister(event)" class="space-y-3 text-sm">
-        <input type="text" id="r-nama" placeholder="Nama Lengkap" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
-        <input type="email" id="r-email" placeholder="Email" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
+    <div id="view-register" class="hidden glass p-8 mt-4 view-animate">
+      <h2 class="text-3xl font-extrabold mb-6 text-white">Gabung Bersama Kami</h2>
+      <form onsubmit="handleRegister(event)" class="space-y-4 text-sm">
+        <input type="text" id="r-nama" placeholder="Nama Lengkap Anda" required class="w-full p-4 rounded-2xl border-none text-slate-800">
+        <input type="email" id="r-email" placeholder="Alamat Email" required class="w-full p-4 rounded-2xl border-none text-slate-800">
         <div class="password-wrapper">
-          <input type="password" id="r-pass" placeholder="Password (Min. 6 Karakter)" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
-          <span class="password-toggle" onclick="togglePassword('r-pass', 'r-pass-icon')">
-            <i data-lucide="eye" id="r-pass-icon" class="w-5 h-5"></i>
+          <input type="password" id="r-pass" placeholder="Password (Min. 6 Karakter)" required class="w-full p-4 rounded-2xl border-none text-slate-800">
+          <span class="password-toggle" onclick="togglePassword('r-pass', 'r-pass-icon-reg')">
+            <i data-lucide="eye" id="r-pass-icon-reg" class="w-6 h-6"></i>
           </span>
         </div>
-        <input type="date" id="r-tgl" required class="w-full p-3 rounded-xl bg-slate-800 border-none text-slate-400">
-        <input type="text" id="r-wa" placeholder="No. WhatsApp" required class="w-full p-3 rounded-xl bg-slate-800 border-none">
-        <textarea id="r-alamat" placeholder="Alamat" class="w-full p-3 rounded-xl bg-slate-800 border-none"></textarea>
-        <button type="submit" id="btn-reg" class="w-full btn-primary py-3 rounded-xl font-bold shadow-lg">Daftar Akun</button>
-        <button type="button" onclick="showView('landing')" class="w-full text-slate-400">Batal</button>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-white/70 mb-1 ml-1">TANGGAL LAHIR</label>
+            <input type="date" id="r-tgl" required class="w-full p-4 rounded-2xl border-none text-slate-800">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-white/70 mb-1 ml-1">NO. WHATSAPP</label>
+            <input type="text" id="r-wa" placeholder="0812..." required class="w-full p-4 rounded-2xl border-none text-slate-800">
+          </div>
+        </div>
+        <textarea id="r-alamat" placeholder="Alamat Lengkap" class="w-full p-4 rounded-2xl border-none text-slate-800" rows="3"></textarea>
+        <button type="submit" id="btn-reg" class="w-full btn-primary py-4 rounded-2xl font-bold shadow-xl text-lg mt-2">Daftar Akun Guru</button>
+        <button type="button" onclick="showView('landing')" class="w-full text-white/60 font-medium py-2">Batal dan Kembali</button>
       </form>
     </div>
 
     <!-- Dashboard -->
-    <div id="view-dashboard" class="hidden space-y-4 pb-20 text-white">
-      <div class="glass p-5 flex justify-between items-center">
-        <div>
-          <p id="user-role-tag" class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Pendidik Inklusi</p>
-          <h3 id="user-display-name" class="text-xl font-bold">Memuat...</h3>
+    <div id="view-dashboard" class="hidden space-y-6 pb-20 text-white view-animate">
+      <div class="glass p-6 flex justify-between items-center">
+        <div class="flex items-center">
+          <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mr-4 border border-white/30">
+             <i data-lucide="user" class="text-white w-8 h-8"></i>
+          </div>
+          <div>
+            <p id="user-role-tag" class="text-[10px] text-blue-200 font-bold uppercase tracking-widest mb-1">Pendidik Inklusi</p>
+            <h3 id="user-display-name" class="text-2xl font-bold leading-tight">Memuat...</h3>
+          </div>
         </div>
-        <button onclick="logout()" class="bg-red-500/20 text-red-400 p-2 rounded-full"><i data-lucide="power"></i></button>
+        <button onclick="logout()" class="bg-rose-500/30 text-rose-100 p-3 rounded-2xl hover:bg-rose-500/50 transition"><i data-lucide="log-out"></i></button>
       </div>
 
       <!-- Admin Context Switcher -->
-      <div id="admin-selector-area" class="hidden glass p-4 space-y-3">
+      <div id="admin-selector-area" class="hidden glass p-5 space-y-3 bg-white/10">
         <div class="flex justify-between items-center">
-          <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest">Filter Data Administrator</p>
-          <button onclick="resetAdminFilter()" id="btn-reset-filter" class="hidden text-[10px] text-red-400 font-bold uppercase">Ganti Guru</button>
+          <p class="text-[11px] font-bold text-white/70 uppercase tracking-widest">KONTROL ADMINISTRATOR</p>
+          <button onclick="resetAdminFilter()" id="btn-reset-filter" class="hidden text-[11px] bg-white/20 px-3 py-1 rounded-full font-bold uppercase hover:bg-white/40 transition">Ganti Guru</button>
         </div>
-        <div id="teacher-current-selection" class="text-sm font-semibold text-blue-400 text-center">Pilih pendidik untuk memantau data</div>
+        <div id="teacher-current-selection" class="text-md font-bold text-yellow-300 flex items-center">
+          <i data-lucide="info" class="w-4 h-4 mr-2"></i> Pilih pendidik untuk memantau data
+        </div>
       </div>
 
       <!-- Stats -->
-      <div id="guru-stats" class="grid grid-cols-2 gap-3">
-        <div class="glass p-4"><p class="text-xs opacity-60">Anak Didik</p><h4 id="s-students" class="text-2xl font-bold">0</h4></div>
-        <div class="glass p-4"><p class="text-xs opacity-60">Log Jurnal</p><h4 id="s-journals" class="text-2xl font-bold">0</h4></div>
+      <div id="guru-stats" class="grid grid-cols-2 gap-4">
+        <div class="glass p-5 stat-card-1"><p class="text-xs font-bold text-white/80 uppercase">Anak Didik</p><h4 id="s-students" class="text-4xl font-extrabold mt-1">0</h4></div>
+        <div class="glass p-5 stat-card-2"><p class="text-xs font-bold text-white/80 uppercase">Log Jurnal</p><h4 id="s-journals" class="text-4xl font-extrabold mt-1">0</h4></div>
       </div>
 
-      <div id="admin-stats" class="hidden grid grid-cols-3 gap-2">
-        <div class="glass p-3 text-center"><p class="text-[9px] opacity-60">Guru</p><h4 id="adm-teachers" class="text-xl font-bold">0</h4></div>
-        <div class="glass p-3 text-center"><p class="text-[9px] opacity-60">Siswa</p><h4 id="adm-students" class="text-xl font-bold">0</h4></div>
-        <div class="glass p-3 text-center"><p class="text-[9px] opacity-60">Jurnal</p><h4 id="adm-journals" class="text-xl font-bold">0</h4></div>
+      <div id="admin-stats" class="hidden grid grid-cols-3 gap-3">
+        <div class="glass p-4 text-center stat-card-1"><p class="text-[10px] font-bold opacity-80 uppercase">Guru</p><h4 id="adm-teachers" class="text-2xl font-bold">0</h4></div>
+        <div class="glass p-4 text-center stat-card-2"><p class="text-[10px] font-bold opacity-80 uppercase">Siswa</p><h4 id="adm-students" class="text-2xl font-bold">0</h4></div>
+        <div class="glass p-4 text-center stat-card-3"><p class="text-[10px] font-bold opacity-80 uppercase">Jurnal</p><h4 id="adm-journals" class="text-2xl font-bold">0</h4></div>
       </div>
 
       <!-- Menus -->
-      <div id="menu-grid" class="grid grid-cols-4 gap-2">
-        <button onclick="showSection('absen')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="calendar" class="text-blue-400 mb-1"></i><span class="text-[10px]">Absen</span></button>
-        <button onclick="showSection('jurnal')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="edit-3" class="text-green-400 mb-1"></i><span class="text-[10px]">Jurnal</span></button>
-        <button onclick="showSection('siswa')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="users" class="text-purple-400 mb-1"></i><span class="text-[10px]">Siswa</span></button>
-        <button onclick="showSection('add')" class="guru-menu glass p-3 flex flex-col items-center"><i data-lucide="user-plus" class="text-orange-400 mb-1"></i><span class="text-[10px]">Baru</span></button>
+      <div id="menu-grid" class="grid grid-cols-4 gap-3">
+        <button onclick="showSection('absen')" class="guru-menu glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-blue-500/40 group-hover:scale-110"><i data-lucide="calendar" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Absen</span>
+        </button>
+        <button onclick="showSection('jurnal')" class="guru-menu glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-emerald-500/40 group-hover:scale-110"><i data-lucide="edit-3" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Jurnal</span>
+        </button>
+        <button onclick="showSection('siswa')" class="guru-menu glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-purple-500/40 group-hover:scale-110"><i data-lucide="users" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Siswa</span>
+        </button>
+        <button onclick="showSection('add')" class="guru-menu glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-orange-500/40 group-hover:scale-110"><i data-lucide="user-plus" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Baru</span>
+        </button>
         
-        <button onclick="showAdminSection('rekap')" class="admin-feature hidden glass p-3 flex flex-col items-center"><i data-lucide="pie-chart" class="text-blue-400 mb-1"></i><span class="text-[10px]">Rekap</span></button>
-        <button onclick="showAdminSection('all-absen')" class="admin-feature hidden glass p-3 flex flex-col items-center"><i data-lucide="list" class="text-green-400 mb-1"></i><span class="text-[10px]">Log Absen</span></button>
-        <button onclick="showAdminSection('all-jurnal')" class="admin-feature hidden glass p-3 flex flex-col items-center"><i data-lucide="book" class="text-purple-400 mb-1"></i><span class="text-[10px]">Log Jurnal</span></button>
-        <button onclick="showAdminSection('teachers')" class="admin-menu glass p-3 flex flex-col items-center"><i data-lucide="user-check" class="text-orange-400 mb-1"></i><span class="text-[10px]">Pilih Guru</span></button>
+        <button onclick="showAdminSection('rekap')" class="admin-feature hidden glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-blue-400 group-hover:scale-110"><i data-lucide="pie-chart" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Rekap</span>
+        </button>
+        <button onclick="showAdminSection('all-absen')" class="admin-feature hidden glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-rose-400 group-hover:scale-110"><i data-lucide="list" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Log Absen</span>
+        </button>
+        <button onclick="showAdminSection('all-jurnal')" class="admin-feature hidden glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-amber-400 group-hover:scale-110"><i data-lucide="book" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Log Jurnal</span>
+        </button>
+        <button onclick="showAdminSection('teachers')" class="admin-menu glass p-4 flex flex-col items-center hover:bg-white/30 transition group">
+          <div class="menu-icon-wrapper bg-teal-400 group-hover:scale-110"><i data-lucide="user-check" class="text-white"></i></div>
+          <span class="text-[11px] font-bold">Pilih Guru</span>
+        </button>
       </div>
 
       <!-- Main Container -->
-      <div id="main-content" class="card-light p-5 min-h-[400px]">
-        <div class="text-center text-slate-400 py-10"><i data-lucide="mouse-pointer-2" class="mx-auto mb-2 opacity-20"></i><p>Pilih menu</p></div>
+      <div id="main-content" class="card-light p-6 min-h-[400px] view-animate">
+        <div class="text-center text-slate-400 py-16">
+          <div class="mb-4 bg-slate-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto opacity-50">
+             <i data-lucide="mouse-pointer-2" class="w-10 h-10"></i>
+          </div>
+          <p class="font-semibold text-lg">Siap beraktivitas hari ini?</p>
+          <p class="text-sm">Silakan pilih menu di atas untuk memulai.</p>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 hidden px-6 py-3 rounded-full shadow-2xl z-50 text-sm font-bold text-white max-w-[90%] text-center"></div>
+  <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 hidden px-8 py-4 rounded-2xl shadow-2xl z-50 text-md font-bold text-white max-w-[90%] text-center backdrop-blur-lg"></div>
 
   <script>
     const SUPABASE_URL = "https://tamrjrqvtulgxnschvpf.supabase.co";
@@ -238,7 +332,7 @@
     function msg(text, error = false) {
       const t = document.getElementById('toast');
       t.innerText = text;
-      t.style.backgroundColor = error ? '#ef4444' : '#2563eb';
+      t.style.background = error ? 'rgba(239, 68, 68, 0.9)' : 'rgba(79, 70, 229, 0.9)';
       t.classList.remove('hidden');
       setTimeout(() => t.classList.add('hidden'), 5000);
     }
@@ -257,17 +351,14 @@
         userSession = data.user;
         isAdmin = (email === 'bina@insani.com');
 
-        // Ambil profil dari tabel teachers
         const { data: prof, error: profErr } = await sb.from('teachers').select('*').eq('id', userSession.id).single();
         
         if (profErr) {
           if (isAdmin) {
-            // Jika admin tapi profil di tabel tidak ada, buat dummy profil
-            userData = { nama: "Admin Bina Insani", email: email };
+            userData = { nama: "Administrator", email: email };
           } else {
-            // Jika guru dan profil tidak ada, gagalkan login dan suruh registrasi ulang
             await sb.auth.signOut();
-            throw new Error("Profil guru tidak ditemukan. Silakan hubungi Admin atau coba daftar ulang dengan email yang sama.");
+            throw new Error("Profil tidak ditemukan. Harap registrasi ulang.");
           }
         } else {
           userData = prof;
@@ -281,7 +372,6 @@
         else showSection('absen');
       } catch (err) { 
         msg("Login Gagal: " + err.message, true); 
-        console.error("Login Error:", err);
       } finally { btn.disabled = false; }
     }
 
@@ -299,17 +389,13 @@
         const { data: authData, error: authError } = await sb.auth.signUp({ email, password: pass });
         if (authError) throw authError;
         
-        // Simpan profil ke tabel teachers menggunakan ID dari auth.users
         const { error: profileError } = await sb.from('teachers').insert([{
           id: authData.user.id, email, nama, tgl_lahir: tgl, no_wa: wa, alamat
         }]);
         
-        if (profileError) {
-          console.error("Profile Insert Error:", profileError);
-          throw new Error("Akun terdaftar, namun gagal menyimpan detail profil. Silakan hubungi Admin.");
-        }
+        if (profileError) throw new Error("Gagal simpan profil database.");
         
-        msg("Pendaftaran Berhasil! Silakan Login.");
+        msg("Selamat! Registrasi Berhasil. Silakan Login.");
         showView('login');
       } catch (err) { 
         msg("Gagal: " + err.message, true); 
@@ -322,8 +408,7 @@
       const adminSelector = document.getElementById('admin-selector-area');
       
       if(isAdmin) {
-        roleTag.innerText = "Sistem Administrator";
-        roleTag.classList.replace('text-blue-400', 'text-red-400');
+        roleTag.innerText = "Sistem Administrator Utama";
         nameDisp.innerText = "Admin Bina Insani";
         document.getElementById('guru-stats').classList.add('hidden');
         document.getElementById('admin-stats').classList.remove('hidden');
@@ -331,8 +416,7 @@
         document.querySelectorAll('.guru-menu').forEach(m => m.classList.add('hidden'));
         document.querySelectorAll('.admin-menu').forEach(m => m.classList.remove('hidden'));
       } else {
-        roleTag.innerText = "Pendidik Inklusi";
-        roleTag.classList.replace('text-red-400', 'text-blue-400');
+        roleTag.innerText = "Pendidik Inklusi Hebat";
         nameDisp.innerText = userData ? userData.nama : "Pendidik";
         document.getElementById('guru-stats').classList.remove('hidden');
         document.getElementById('admin-stats').classList.add('hidden');
@@ -375,22 +459,26 @@
     // --- GURU SECTIONS ---
     function showSection(s) {
       const cnt = document.getElementById('main-content');
+      cnt.classList.remove('view-animate');
+      void cnt.offsetWidth; // trigger reflow
+      cnt.classList.add('view-animate');
+
       if(s === 'absen') {
-        cnt.innerHTML = `<div class="flex border-b mb-4"><button onclick="renderAbsenTab('input')" id="tab-abs-input" class="flex-1 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600">Input Absen</button><button onclick="renderAbsenTab('kalender')" id="tab-abs-kalender" class="flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400">Kalender</button></div><div id="absen-tab-content"></div>`;
+        cnt.innerHTML = `<div class="flex p-1 bg-slate-100 rounded-2xl mb-6 shadow-inner"><button onclick="renderAbsenTab('input')" id="tab-abs-input" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">Input Absen</button><button onclick="renderAbsenTab('kalender')" id="tab-abs-kalender" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">Kalender Riwayat</button></div><div id="absen-tab-content" class="view-animate"></div>`;
         renderAbsenTab('input');
       } 
       else if(s === 'jurnal') {
-        cnt.innerHTML = `<div class="flex border-b mb-4"><button onclick="renderJurnalTab('input')" id="tab-jur-input" class="flex-1 py-2 text-sm font-bold border-b-2 border-green-600 text-green-600">Tulis Jurnal</button><button onclick="renderJurnalTab('riwayat')" id="tab-jur-riwayat" class="flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400">Riwayat</button></div><div id="jurnal-tab-content"></div>`;
+        cnt.innerHTML = `<div class="flex p-1 bg-slate-100 rounded-2xl mb-6 shadow-inner"><button onclick="renderJurnalTab('input')" id="tab-jur-input" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">Tulis Laporan</button><button onclick="renderJurnalTab('riwayat')" id="tab-jur-riwayat" class="flex-1 py-3 text-sm font-bold rounded-xl transition-all">Riwayat Jurnal</button></div><div id="jurnal-tab-content" class="view-animate"></div>`;
         renderJurnalTab('input');
       }
       else if(s === 'siswa') {
-        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-purple-600">Siswa Anda</h3><div class="space-y-2">`;
-        if(students.length === 0) h += `<p class="text-center text-slate-400 py-10 italic">Belum ada siswa.</p>`;
-        else students.forEach(st => h += `<div class="p-3 bg-slate-50 rounded-lg flex justify-between shadow-sm"><div><b class="text-blue-600 font-bold">${st.nama}</b><br><small class="text-slate-500 font-medium">${st.kelas}</small></div></div>`);
+        let h = `<h3 class="text-xl font-bold mb-6 text-purple-600 flex items-center"><i data-lucide="users" class="mr-2"></i> Siswa Bimbingan</h3><div class="space-y-3">`;
+        if(students.length === 0) h += `<div class="text-center py-10 italic opacity-50">Belum ada siswa terdaftar.</div>`;
+        else students.forEach(st => h += `<div class="p-4 bg-slate-50 border-l-4 border-purple-500 rounded-2xl flex justify-between items-center shadow-sm"><div><b class="text-slate-800 text-lg">${st.nama}</b><br><span class="text-slate-500 font-medium px-2 py-0.5 bg-slate-200 rounded-full text-[10px] uppercase">${st.kelas}</span></div><i data-lucide="chevron-right" class="text-slate-300"></i></div>`);
         cnt.innerHTML = h + `</div>`;
       }
       else if(s === 'add') {
-        cnt.innerHTML = `<h3 class="font-bold mb-4 border-b pb-2 text-orange-600">Tambah Siswa</h3><form onsubmit="saveStudent(event)" class="space-y-3"><input type="text" id="s-nama" placeholder="Nama Siswa" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"><input type="text" id="s-kls" placeholder="Kelas" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"><input type="date" id="s-tgl" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"><button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">Simpan</button></form>`;
+        cnt.innerHTML = `<h3 class="text-xl font-bold mb-6 text-orange-600 flex items-center"><i data-lucide="user-plus" class="mr-2"></i> Tambah Siswa Baru</h3><form onsubmit="saveStudent(event)" class="space-y-4"><input type="text" id="s-nama" placeholder="Nama Lengkap Siswa" required class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-orange-400"><input type="text" id="s-kls" placeholder="Kelas / Tingkatan" required class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-orange-400"><div class="ml-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tanggal Lahir</div><input type="date" id="s-tgl" required class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-orange-400"><button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold shadow-lg mt-2">Simpan Data Siswa</button></form>`;
       }
       lucide.createIcons();
     }
@@ -398,25 +486,32 @@
     // --- TAB ABSENSI ---
     function renderAbsenTab(tab) {
       const content = document.getElementById('absen-tab-content');
-      if (!content) return;
-      document.getElementById('tab-abs-input').className = tab === 'input' ? "flex-1 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
-      document.getElementById('tab-abs-kalender').className = tab === 'kalender' ? "flex-1 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
+      const ti = document.getElementById('tab-abs-input');
+      const tk = document.getElementById('tab-abs-kalender');
+      
+      ti.className = tab === 'input' ? "flex-1 py-3 text-sm font-bold rounded-xl bg-white text-indigo-600 shadow-sm" : "flex-1 py-3 text-sm font-bold rounded-xl text-slate-400";
+      tk.className = tab === 'kalender' ? "flex-1 py-3 text-sm font-bold rounded-xl bg-white text-indigo-600 shadow-sm" : "flex-1 py-3 text-sm font-bold rounded-xl text-slate-400";
 
       if(tab === 'input') {
         let h = `<form onsubmit="saveAbsen(event)" class="space-y-4">
-          <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-            <p class="text-[10px] font-bold text-blue-600 uppercase mb-1 tracking-widest">Guru Pendamping</p>
-            <div class="flex justify-between items-center font-bold text-slate-700"><span>${userData ? userData.nama : 'Pendidik'}</span>
-              <select id="abs-guru" class="p-1 text-sm rounded border text-blue-600 focus:ring-2 focus:ring-blue-500"><option>Hadir</option><option>Izin</option><option>Sakit</option></select>
+          <div class="bg-indigo-50 p-4 rounded-3xl border border-indigo-100 shadow-sm">
+            <p class="text-[10px] font-bold text-indigo-600 uppercase mb-2 tracking-widest">Kehadiran Pendidik</p>
+            <div class="flex justify-between items-center font-bold text-slate-700 text-lg"><span>${userData ? userData.nama : 'Pendidik'}</span>
+              <select id="abs-guru" class="p-2 text-sm rounded-xl border-none shadow-sm text-indigo-600 font-bold"><option>Hadir</option><option>Izin</option><option>Sakit</option></select>
             </div>
           </div>`;
         if(students.length === 0) h += `<p class="text-center py-10 opacity-50 italic text-xs">Tambahkan data siswa terlebih dahulu.</p>`;
         else {
-          students.forEach(st => h += `<div class="flex justify-between items-center p-3 border-b text-sm text-slate-800"><span>${st.nama}</span><select class="abs-item p-1 border rounded text-blue-600 font-bold" data-name="${st.nama}"><option>Hadir</option><option>Izin</option><option>Sakit</option><option>Alpa</option></select></div>`);
-          h += `<button type="submit" id="btn-save-abs" class="w-full btn-primary py-3 rounded-lg font-bold mt-4 shadow-lg">Kirim Absen Sekarang</button>`;
+          h += `<p class="text-[10px] font-bold text-slate-400 uppercase mt-6 mb-2 tracking-widest ml-2">Kehadiran Siswa</p>`;
+          students.forEach(st => h += `<div class="flex justify-between items-center p-4 bg-white border-b border-slate-100 last:border-0">
+            <span class="text-slate-700 font-bold">${st.nama}</span>
+            <select class="abs-item p-2 text-sm rounded-xl border-none bg-slate-100 text-indigo-600 font-bold" data-name="${st.nama}"><option>Hadir</option><option>Izin</option><option>Sakit</option><option>Alpa</option></select>
+          </div>`);
+          h += `<button type="submit" id="btn-save-abs" class="w-full btn-primary py-4 rounded-2xl font-bold mt-6 shadow-xl text-lg">Simpan Absensi Hari Ini</button>`;
         }
         content.innerHTML = h + `</form>`;
       } else renderCalendarUI();
+      lucide.createIcons();
     }
 
     function renderCalendarUI() {
@@ -424,7 +519,16 @@
       const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
       const year = currentCalDate.getFullYear();
       const month = currentCalDate.getMonth();
-      content.innerHTML = `<div class="flex justify-between items-center mb-4"><button onclick="changeMonth(-1)" class="p-2"><i data-lucide="chevron-left"></i></button><span class="font-bold text-slate-700">${monthNames[month]} ${year}</span><button onclick="changeMonth(1)" class="p-2"><i data-lucide="chevron-right"></i></button></div><div class="calendar-grid mb-2">${['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => `<div class="text-center text-[10px] font-bold text-slate-400 py-2 uppercase">${day}</div>`).join('')}${generateCalendarDays(year, month)}</div><div id="day-detail" class="mt-4 p-4 bg-slate-50 rounded-xl border hidden shadow-inner text-slate-800"></div>`;
+      content.innerHTML = `<div class="flex justify-between items-center mb-6 bg-indigo-50 p-2 rounded-2xl">
+        <button onclick="changeMonth(-1)" class="p-3 bg-white rounded-xl shadow-sm text-indigo-600"><i data-lucide="chevron-left"></i></button>
+        <span class="font-extrabold text-indigo-900 text-lg uppercase tracking-tight">${monthNames[month]} ${year}</span>
+        <button onclick="changeMonth(1)" class="p-3 bg-white rounded-xl shadow-sm text-indigo-600"><i data-lucide="chevron-right"></i></button>
+      </div>
+      <div class="calendar-grid mb-4">
+        ${['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => `<div class="text-center text-[10px] font-extrabold text-indigo-300 py-2 uppercase tracking-tighter">${day}</div>`).join('')}
+        ${generateCalendarDays(year, month)}
+      </div>
+      <div id="day-detail" class="mt-6 p-5 bg-indigo-50 rounded-3xl border border-indigo-100 hidden shadow-inner text-slate-800 view-animate"></div>`;
       lucide.createIcons();
     }
 
@@ -434,11 +538,12 @@
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       let html = '';
-      for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+      for (let i = 0; i < firstDay; i++) html += `<div class="opacity-0"></div>`;
       for (let day = 1; day <= daysInMonth; day++) {
         const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const hasData = attendanceLogs.some(log => log.created_at && log.created_at.startsWith(dStr));
-        html += `<div onclick="showDayDetail('${dStr}')" class="calendar-day text-slate-700 ${hasData ? 'has-data bg-blue-50' : ''}">${day}</div>`;
+        const isToday = (new Date().toDateString() === new Date(year, month, day).toDateString());
+        html += `<div onclick="showDayDetail('${dStr}')" class="calendar-day ${hasData ? 'has-data' : ''} ${isToday ? 'current-day' : ''}">${day}</div>`;
       }
       return html;
     }
@@ -448,36 +553,64 @@
       if (!detail) return;
       const logs = attendanceLogs.filter(log => log.created_at && log.created_at.startsWith(dateStr));
       if(logs.length > 0) {
-        detail.innerHTML = `<h4 class="font-bold text-xs text-blue-600 mb-2 border-b pb-1">Detail: ${dateStr}</h4>` + logs.map(log => `<div class="flex justify-between text-[10px] py-1 border-b border-slate-200 text-slate-800"><span>${log.identifier}</span><b class="${log.status === 'Hadir' ? 'text-green-600' : 'text-red-500'} font-bold">${log.status}</b></div>`).join('');
+        detail.innerHTML = `<h4 class="font-extrabold text-md text-indigo-600 mb-4 border-b border-indigo-200 pb-2 flex items-center"><i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Detail Tanggal: ${dateStr}</h4>` + 
+          logs.map(log => `<div class="flex justify-between items-center py-2 border-b border-white last:border-0"><span class="font-bold text-slate-700">${log.identifier}</span><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${log.status === 'Hadir' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">${log.status}</span></div>`).join('');
         detail.classList.remove('hidden');
-      } else detail.classList.add('hidden');
+      } else {
+        detail.classList.add('hidden');
+        msg("Tidak ada rekaman data pada " + dateStr);
+      }
+      lucide.createIcons();
     }
 
     // --- TAB JURNAL ---
     function renderJurnalTab(tab) {
       const content = document.getElementById('jurnal-tab-content');
-      if (!content) return;
-      document.getElementById('tab-jur-input').className = tab === 'input' ? "flex-1 py-2 text-sm font-bold border-b-2 border-green-600 text-green-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
-      document.getElementById('tab-jur-riwayat').className = tab === 'riwayat' ? "flex-1 py-2 text-sm font-bold border-b-2 border-green-600 text-green-600" : "flex-1 py-2 text-sm font-bold border-b-2 border-transparent text-slate-400";
+      const ti = document.getElementById('tab-jur-input');
+      const tr = document.getElementById('tab-jur-riwayat');
+      
+      ti.className = tab === 'input' ? "flex-1 py-3 text-sm font-bold rounded-xl bg-white text-emerald-600 shadow-sm" : "flex-1 py-3 text-sm font-bold rounded-xl text-slate-400";
+      tr.className = tab === 'riwayat' ? "flex-1 py-3 text-sm font-bold rounded-xl bg-white text-emerald-600 shadow-sm" : "flex-1 py-3 text-sm font-bold rounded-xl text-slate-400";
 
       if(tab === 'input') {
         if(students.length === 0) content.innerHTML = `<p class="text-center py-10 italic text-xs">Silakan tambah data siswa terlebih dahulu.</p>`;
         else {
-          content.innerHTML = `<form onsubmit="saveJurnal(event)" class="space-y-3"><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pilih Siswa</label><select id="j-siswa" class="w-full p-3 rounded-lg border text-blue-600 font-bold focus:ring-2 focus:ring-blue-500">${students.map(st => `<option>${st.nama}</option>`).join('')}</select><label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Catatan Laporan Perkembangan</label><textarea id="j-text" placeholder="Tulis pengamatan atau perkembangan anak hari ini..." rows="6" required class="w-full p-3 rounded-lg border focus:ring-2 focus:ring-blue-500"></textarea><button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">Simpan Laporan Jurnal</button></form>`;
+          content.innerHTML = `<form onsubmit="saveJurnal(event)" class="space-y-4">
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Pilih Siswa</label>
+              <select id="j-siswa" class="w-full p-4 rounded-2xl border-none shadow-sm text-emerald-600 font-bold focus:ring-2 focus:ring-emerald-400 mt-1">${students.map(st => `<option>${st.nama}</option>`).join('')}</select>
+            </div>
+            <div>
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi Perkembangan</label>
+              <textarea id="j-text" placeholder="Tulis pengamatan Anda hari ini..." rows="8" required class="w-full p-4 rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-emerald-400 mt-1 text-slate-700"></textarea>
+            </div>
+            <button type="submit" class="w-full btn-primary py-4 rounded-2xl font-bold text-lg shadow-xl" style="background: linear-gradient(45deg, #10b981, #059669)">Simpan Laporan Jurnal</button></form>`;
         }
       } else {
         if(journalLogs.length === 0) content.innerHTML = `<p class="text-center py-10 opacity-50 italic text-xs">Belum ada riwayat laporan jurnal.</p>`;
-        else content.innerHTML = journalLogs.map(log => `<div class="p-3 bg-slate-50 rounded-xl border mb-2 shadow-sm text-xs text-slate-800"><div class="flex justify-between font-bold text-blue-600 mb-1"><span>${log.student_name}</span><span>${new Date(log.created_at).toLocaleDateString()}</span></div><p class="leading-relaxed opacity-80 font-medium italic">${log.content}</p></div>`).join('');
+        else content.innerHTML = journalLogs.map(log => `
+          <div class="p-5 bg-emerald-50 rounded-3xl border border-emerald-100 mb-4 shadow-sm text-xs view-animate">
+            <div class="flex justify-between items-start mb-3">
+               <div>
+                  <b class="text-emerald-700 text-lg font-extrabold">${log.student_name}</b>
+                  <p class="text-emerald-500 font-bold uppercase tracking-widest text-[9px]">${new Date(log.created_at).toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'})}</p>
+               </div>
+               <div class="p-2 bg-white rounded-xl shadow-sm"><i data-lucide="book-open" class="text-emerald-400 w-4 h-4"></i></div>
+            </div>
+            <p class="leading-relaxed text-slate-700 text-sm italic font-medium">"${log.content}"</p>
+          </div>`).join('');
       }
+      lucide.createIcons();
     }
 
-    // --- ADMIN FILTER ---
+    // --- ADMIN ACTIONS ---
     function selectTeacherForAdmin(teacherId, teacherName) {
       selectedTeacher = { id: teacherId, name: teacherName };
-      document.getElementById('teacher-current-selection').innerText = "Data Terpilih: " + teacherName;
+      document.getElementById('teacher-current-selection').innerHTML = `<i data-lucide="user-check" class="w-4 h-4 mr-2"></i> Guru Terpilih: ${teacherName}`;
       document.getElementById('btn-reset-filter').classList.remove('hidden');
       document.querySelectorAll('.admin-feature').forEach(el => el.classList.remove('hidden'));
       showAdminSection('rekap');
+      lucide.createIcons();
     }
 
     function resetAdminFilter() {
@@ -490,24 +623,31 @@
 
     function showAdminSection(s) {
       const cnt = document.getElementById('main-content');
+      cnt.classList.remove('view-animate');
+      void cnt.offsetWidth;
+      cnt.classList.add('view-animate');
+
       if(s === 'teachers') {
-        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-orange-600">Daftar Pendidik</h3><div class="space-y-2">`;
-        allTeachers.forEach(t => h += `<div onclick="selectTeacherForAdmin('${t.id}', '${t.nama}')" class="p-3 bg-white border rounded-xl flex items-center cursor-pointer hover:bg-blue-50 transition text-slate-800"><div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold mr-3 text-sm">${t.nama.charAt(0)}</div><div class="flex-1"><b class="text-sm font-bold">${t.nama}</b><br><small class="text-slate-400 font-medium text-[10px] tracking-tight">${t.email}</small></div><i data-lucide="chevron-right" class="text-slate-300 w-4 h-4"></i></div>`);
+        let h = `<h3 class="text-xl font-extrabold mb-6 text-orange-600 flex items-center"><i data-lucide="user-check" class="mr-2"></i> Daftar Pendidik</h3><div class="space-y-3">`;
+        allTeachers.forEach(t => h += `<div onclick="selectTeacherForAdmin('${t.id}', '${t.nama}')" class="p-4 bg-white border-none rounded-2xl flex items-center cursor-pointer hover:bg-indigo-50 transition shadow-sm group">
+          <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center font-black mr-4 text-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">${t.nama.charAt(0)}</div>
+          <div class="flex-1"><b class="text-slate-800 text-md font-bold">${t.nama}</b><br><small class="text-slate-400 font-medium">${t.email}</small></div>
+          <i data-lucide="chevron-right" class="text-slate-300 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i></div>`);
         cnt.innerHTML = h + `</div>`;
       } 
       else if (!selectedTeacher) cnt.innerHTML = `<div class="text-center py-20 text-slate-400 italic">Pilih guru di menu "Pilih Guru" untuk melihat log spesifik.</div>`;
       else if(s === 'all-absen') {
         const f = attendanceLogs.filter(l => l.teacher_id === selectedTeacher.id);
-        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-slate-800">Log Absen: ${selectedTeacher.name}</h3><div class="space-y-2 text-[10px]">`;
-        if(f.length === 0) h += `<p class="text-center py-10 opacity-50 italic">Kosong.</p>`;
-        f.slice(0, 50).forEach(l => h += `<div class="p-2 bg-slate-50 rounded border flex justify-between text-slate-800 shadow-sm"><div><b class="font-bold text-blue-600">${l.identifier}</b><br><span class="opacity-50 font-medium">${new Date(l.created_at).toLocaleString('id-ID')}</span></div><div class="font-bold ${l.status === 'Hadir' ? 'text-green-600' : 'text-red-500'} uppercase">${l.status}</div></div>`);
+        let h = `<h3 class="font-extrabold text-xl mb-6 text-slate-800 border-b border-slate-100 pb-3">Log Absensi: ${selectedTeacher.name}</h3><div class="space-y-3">`;
+        if(f.length === 0) h += `<p class="text-center py-10 opacity-50 italic">Tidak ada data.</p>`;
+        f.slice(0, 50).forEach(l => h += `<div class="p-4 bg-slate-50 rounded-2xl flex justify-between items-center shadow-sm border-l-4 ${l.status === 'Hadir' ? 'border-emerald-500' : 'border-rose-500'}"><div><b class="text-slate-700 font-bold">${l.identifier}</b><br><span class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">${new Date(l.created_at).toLocaleString('id-ID')}</span></div><div class="font-black ${l.status === 'Hadir' ? 'text-emerald-600' : 'text-rose-600'} uppercase text-xs">${l.status}</div></div>`);
         cnt.innerHTML = h + `</div>`;
       } 
       else if(s === 'all-jurnal') {
         const f = journalLogs.filter(l => l.teacher_id === selectedTeacher.id);
-        let h = `<h3 class="font-bold mb-4 border-b pb-2 text-purple-600">Jurnal: ${selectedTeacher.name}</h3><div class="space-y-4 text-slate-800">`;
-        if(f.length === 0) h += `<p class="text-center py-10 opacity-50 italic text-slate-800">Belum ada catatan jurnal.</p>`;
-        f.forEach(l => h += `<div class="p-3 bg-slate-50 rounded-xl border text-[10px] text-slate-800 shadow-sm"><div class="flex justify-between font-bold text-blue-600 mb-1"><span>${l.student_name}</span><span>${new Date(l.created_at).toLocaleDateString()}</span></div><p class="leading-relaxed opacity-90">${l.content}</p></div>`);
+        let h = `<h3 class="font-extrabold text-xl mb-6 text-purple-600 border-b border-slate-100 pb-3">Log Jurnal: ${selectedTeacher.name}</h3><div class="space-y-4">`;
+        if(f.length === 0) h += `<p class="text-center py-10 opacity-50 italic">Belum ada catatan.</p>`;
+        f.forEach(l => h += `<div class="p-5 bg-white border-none rounded-3xl shadow-sm text-sm"><div class="flex justify-between font-extrabold text-indigo-600 mb-2"><span>${l.student_name}</span><span class="text-slate-300 font-bold text-[10px]">${new Date(l.created_at).toLocaleDateString()}</span></div><p class="text-slate-600 font-medium leading-relaxed italic">"${l.content}"</p></div>`);
         cnt.innerHTML = h + `</div>`;
       } 
       else if(s === 'rekap') renderAdminRekap();
@@ -529,20 +669,19 @@
           t[l.identifier].total++; if(l.status === 'Hadir') t[l.identifier].hadir++;
         }
       });
-      let h = `<h3 class="font-bold mb-4 border-b pb-2 text-slate-800 flex justify-between items-center"><span>Rekap ${month}/${year}</span> <span class="text-[10px] bg-blue-100 px-2 py-0.5 rounded text-blue-600 uppercase">Bulanan</span></h3><p class="text-xs font-bold text-slate-500 mb-4 tracking-tight">Pendidik: ${selectedTeacher.name}</p>`;
-      h += `<div class="text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Kehadiran Pendidik</div>`;
-      if(Object.keys(rekapGuru).length === 0) h += `<p class="text-[10px] italic opacity-40 mb-4">Tidak ada data guru bulan ini.</p>`;
-      Object.keys(rekapGuru).forEach(id => {
-        const p = Math.round((rekapGuru[id].hadir / rekapGuru[id].total) * 100);
-        h += `<div class="mb-4 text-xs text-slate-800"><div class="flex justify-between mb-1"><span class="font-medium">${id}</span><span class="font-bold text-blue-600">${p}%</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full shadow-inner"><div class="bg-blue-500 h-1.5 rounded-full" style="width:${p}%"></div></div></div>`;
+      let h = `<h3 class="text-2xl font-black mb-1 text-slate-800 flex justify-between items-center">Rekap Bulanan</h3><p class="text-sm font-bold text-indigo-500 mb-6 tracking-wide uppercase">Pendidik: ${selectedTeacher.name} (${month}/${year})</p>`;
+      h += `<div class="text-[11px] font-black text-slate-400 uppercase mb-4 tracking-[0.2em]">Persentase Kehadiran</div>`;
+      h += `<div class="space-y-6">`;
+      
+      const combined = {...rekapGuru, ...rekapSiswa};
+      if(Object.keys(combined).length === 0) h += `<p class="text-center py-10 opacity-40">Tidak ada data untuk bulan ini.</p>`;
+      
+      Object.keys(combined).forEach(id => {
+        const p = Math.round((combined[id].hadir / combined[id].total) * 100);
+        const color = p > 80 ? 'bg-emerald-500' : p > 50 ? 'bg-indigo-500' : 'bg-rose-500';
+        h += `<div class="group"><div class="flex justify-between mb-2"><span class="font-bold text-slate-700">${id}</span><span class="font-black text-indigo-600">${p}%</span></div><div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden shadow-inner"><div class="${color} h-full transition-all duration-1000" style="width:${p}%"></div></div></div>`;
       });
-      h += `<div class="mt-8 text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Kehadiran Anak Didik</div>`;
-      if(Object.keys(rekapSiswa).length === 0) h += `<p class="text-[10px] italic opacity-40">Tidak ada data siswa bulan ini.</p>`;
-      Object.keys(rekapSiswa).forEach(id => {
-        const p = Math.round((rekapSiswa[id].hadir / rekapSiswa[id].total) * 100);
-        h += `<div class="mb-4 text-xs text-slate-800"><div class="flex justify-between mb-1"><span class="font-medium">${id}</span><span class="font-bold text-green-600">${p}%</span></div><div class="w-full bg-slate-200 h-1.5 rounded-full shadow-inner"><div class="bg-green-500 h-1.5 rounded-full" style="width:${p}%"></div></div></div>`;
-      });
-      cnt.innerHTML = h;
+      cnt.innerHTML = h + `</div>`;
     }
 
     // --- CRUD ---
@@ -552,8 +691,8 @@
       try {
         const { error } = await sb.from('students').insert([{ teacher_id: userSession.id, nama: document.getElementById('s-nama').value, kelas: document.getElementById('s-kls').value, tgl_lahir: document.getElementById('s-tgl').value }]);
         if (error) throw error;
-        msg("Data Siswa Berhasil Disimpan!"); await loadStats(); showSection('siswa');
-      } catch (err) { msg("Gagal simpan: " + err.message, true); }
+        msg("Siswa Berhasil Ditambahkan! 🎉"); await loadStats(); showSection('siswa');
+      } catch (err) { msg("Gagal: " + err.message, true); }
       finally { btn.disabled = false; }
     }
 
@@ -561,18 +700,13 @@
       e.preventDefault();
       const btn = document.getElementById('btn-save-abs'); btn.disabled = true;
       try {
-        // Validasi ketersediaan data profil
         const ident = userData ? userData.nama : userSession.email;
         const logs = [{ teacher_id: userSession.id, identifier: ident, role: 'Guru', status: document.getElementById('abs-guru').value }];
-        
-        document.querySelectorAll('.abs-item').forEach(el => {
-          logs.push({ teacher_id: userSession.id, identifier: el.dataset.name, role: 'Siswa', status: el.value });
-        });
-        
+        document.querySelectorAll('.abs-item').forEach(el => logs.push({ teacher_id: userSession.id, identifier: el.dataset.name, role: 'Siswa', status: el.value }));
         const { error } = await sb.from('attendance').insert(logs);
         if (error) throw error;
-        msg("Absensi Hari Ini Berhasil Terkirim!"); await loadStats(); renderAbsenTab('kalender');
-      } catch (err) { msg("Gagal kirim absen: " + err.message, true); }
+        msg("Absensi Berhasil Terkirim! 📮"); await loadStats(); renderAbsenTab('kalender');
+      } catch (err) { msg("Gagal: " + err.message, true); }
       finally { btn.disabled = false; }
     }
 
@@ -582,8 +716,8 @@
       try {
         const { error } = await sb.from('journals').insert([{ teacher_id: userSession.id, student_name: document.getElementById('j-siswa').value, content: document.getElementById('j-text').value }]);
         if (error) throw error;
-        msg("Laporan Jurnal Berhasil Disimpan!"); await loadStats(); renderJurnalTab('riwayat');
-      } catch (err) { msg("Gagal simpan jurnal: " + err.message, true); }
+        msg("Laporan Jurnal Tersimpan! 📝"); await loadStats(); renderJurnalTab('riwayat');
+      } catch (err) { msg("Gagal: " + err.message, true); }
       finally { btn.disabled = false; }
     }
 
